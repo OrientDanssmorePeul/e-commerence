@@ -38,6 +38,22 @@ const Categories = () => {
 
     }
 
+    const handleDelete = async (categ) => {
+        if(categ && categ._id){
+            try {
+                const res = await fetch(`http://localhost:3000/categories/remove/${categ._id}`, {
+                    method: "DELETE",
+                });
+                const data = await res.json();
+                alert("Deleted: " + JSON.stringify(data));
+
+                setCategory(category.filter(cat => cat._id !== categ._id));
+            } catch (err) {
+                alert("Deletion failed");
+            }
+        }
+    };
+
     return(
         <>
             <Box className="px-5">
@@ -92,7 +108,7 @@ const Categories = () => {
                                         <TableCell component="th" scope="row">{c.name}</TableCell>
                                         <TableCell align="right">
                                             <Button className="bg-primary" variant="contained" sx={{textTransform: "none"}}>Edit</Button>
-                                            <Button className="bg-danger" variant="contained" sx={{textTransform: "none"}}>Delete</Button>
+                                            <Button onClick={handleDelete(c._id)} className="bg-danger" variant="contained" sx={{textTransform: "none"}}>Delete</Button>
                                         </TableCell>
                                     </TableRow>                                      
                                 ))
