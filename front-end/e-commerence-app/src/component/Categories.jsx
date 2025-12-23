@@ -20,7 +20,7 @@ const Categories = () => {
             setCategory(data)  
         }
         fetchProduct()
-    }, [category])
+    }, [])
 
     const createNew = async () => {
         if(createCategory.current.value){
@@ -39,9 +39,9 @@ const Categories = () => {
     }
 
     const handleDelete = async (categ) => {
-        if(categ && categ._id){
+        if(categ){
             try {
-                const res = await fetch(`http://localhost:3000/categories/remove/${categ._id}`, {
+                const res = await fetch(`http://localhost:3000/categories/remove/${categ}`, {
                     method: "DELETE",
                 });
                 const data = await res.json();
@@ -108,7 +108,7 @@ const Categories = () => {
                                         <TableCell component="th" scope="row">{c.name}</TableCell>
                                         <TableCell align="right">
                                             <Button className="bg-primary" variant="contained" sx={{textTransform: "none"}}>Edit</Button>
-                                            <Button onClick={handleDelete(c._id)} className="bg-danger" variant="contained" sx={{textTransform: "none"}}>Delete</Button>
+                                            <Button onClick={() => handleDelete(c._id)} className="bg-danger" variant="contained" sx={{textTransform: "none"}}>Delete</Button>
                                         </TableCell>
                                     </TableRow>                                      
                                 ))
