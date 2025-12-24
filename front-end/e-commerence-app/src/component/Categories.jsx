@@ -15,9 +15,10 @@ const Categories = () => {
 
     useEffect(()=>{
         const fetchProduct = async () => {
-            const response = await fetch(`http://localhost:3000/categories/getAll`)
+            const response = await fetch(`http://localhost:5000/categories/getAll`)
             const data = await response.json()
-            setCategory(data)  
+            setCategory(data)
+            console.log(data)  
         }
         fetchProduct()
     }, [])
@@ -44,10 +45,11 @@ const Categories = () => {
                 const res = await fetch(`http://localhost:3000/categories/remove/${categ}`, {
                     method: "DELETE",
                 });
-                const data = await res.json();
-                alert("Deleted: " + JSON.stringify(data));
-
-                setCategory(category.filter(cat => cat._id !== categ._id));
+                if (res.ok) {
+                    // 2. IMPORTANT: Update state using the functional update pattern
+                    // This ensures you are working with the most recent data
+                    setCategory((prev) => prev.filter(cat => cat._id !== categ));
+                }
             } catch (err) {
                 alert("Deletion failed");
             }
