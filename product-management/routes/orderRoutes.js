@@ -21,4 +21,13 @@ router.get("/getOrder", async (req, res) => {
     }
 });
 
+router.delete("/remove/:id", async (req, res) => {
+    try {
+        const order = await Order.findByIdAndDelete(req.params.id)
+        res.json(order);
+    } catch (error) {
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
 module.exports = router;

@@ -6,39 +6,43 @@ import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import axios from 'axios'
 
 const Cart = ({products, setCart, user, setOrder}) => {
-    const total = products.reduce((acc, p) => {
-        const itemTotal = p.price * p.quantity; 
-        return acc + itemTotal;
-    }, 0)
+    const total = products.reduce((acc, p) => acc + p.price * p.quantity, 0);
 
-    const remove = (product) => {
-        const removedItem = products.filter((p)=>product != p._id)
-        setCart(removedItem)
+    const remove = (productId) => {
+        const removedItem = products.filter((p) => p.productId !== productId);
+        setCart(removedItem);
     }
+    
     const addOrder = async () => {
-        if(products.length > 0){
-            const response = await fetch('http://localhost:3000/order/newOrder', {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    user: user._id,
-                    products: products.map((p)=>({
-                        productId: p._id, 
-                        name: p.name,
-                        price: p.price,
-                        quantity: p.quantity
-                    }))
-                })
-            })
-            const data = await response.json();
-            setOrder(data)
-            setCart([])            
+        if (products.length === 0) return;
+
+        try {
+            // 1. Create a new order
+            const orderResponse = await axios.post('http://localhost:3000/order/newOrder', {
+                user: user._id,
+                products: products.map(p => ({
+                    productId: p._id,
+                    name: p.name,
+                    price: p.price,
+                    quantity: p.quantity
+                }))
+            });
+
+            setOrder(orderResponse.data);
+
+            // 2. Delete the cart for this user
+            await axios.delete(`http://localhost:3000/cart/deleteCartByUser/${user._id}`);
+
+            // 3. Clear cart state on frontend
+            setCart([]);
+
+        } catch (err) {
+            console.error("Failed to add order or clear cart:", err);
         }
-    }
+    };
     return(
         <>
         <Box className="px-5">
@@ -89,14 +93,13 @@ const Cart = ({products, setCart, user, setOrder}) => {
                             products.length > 0 
                             ?
                             products.map((p)=>{
-
                                 return(
-                                    <TableRow key={p._id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                    <TableRow key={p.productId} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                                         <TableCell component="th" scope="row">{p.name}</TableCell>
                                         <TableCell align="right">{p.price}</TableCell>
                                         <TableCell align="right">{p.quantity}</TableCell>
                                         <TableCell align="right">{p.quantity*p.price}</TableCell>
-                                        <TableCell align="right"><Button onClick={()=>remove(p._id)} className="bg-danger" variant="contained" sx={{textTransform: "none"}}>Remove</Button></TableCell>
+                                        <TableCell align="right"><Button onClick={() => remove(p.productId)} className="bg-danger" variant="contained" sx={{ textTransform: "none" }}>Remove</Button></TableCell>
                                     </TableRow>                                    
                                 )                              
                             })

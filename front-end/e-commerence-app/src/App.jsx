@@ -9,23 +9,7 @@ import { Box, Button, Card, TextField, Typography } from "@mui/material"
 
 function App() {
 
-  const getCart = () => {
-    try{
-      let storage = JSON.parse(localStorage.getItem("cart"))
-      if(storage != undefined || storage != null){
-        return storage
-      }else{
-        return []
-      }
-    }catch(error){
-      console.log(Error, "error")
-    }
-  }
-
-
-
-
-  const [cart, setCart] = useState(getCart)
+  const [cart, setCart] = useState([])
   const [orders, setOrders] = useState([])
   const [login, setLogin] = useState(
     ()=>{
@@ -35,10 +19,19 @@ function App() {
   )
 
 
-  useEffect(() => {
-      const cartToSave = login ? cart : [];
-      localStorage.setItem("cart", JSON.stringify(cartToSave));
-  }, [cart, login]); 
+useEffect(() => {
+  const fetchCart = async () => {
+    if (!login?._id) return;
+
+    const response = await fetch(`http://localhost:3000/cart/getCart?user=${login._id}`);
+    const data = await response.json();
+
+    // store products array, not the whole cart object
+    setCart(data?.products || []); 
+  };
+
+  fetchCart();
+}, [login]);
   
   useEffect(() => {
     const fetchOrders = async () => {
@@ -50,7 +43,7 @@ function App() {
     if (login?._id) {
       fetchOrders();
     }
-  }, [orders, login])
+  }, [login])
 
 
 
@@ -118,7 +111,7 @@ function App() {
     return (
         <BrowserRouter>
           <Routes>
-            <Route path='/' element={<Home setCart={setCart}/>}/>
+            <Route path='/' element={<Home setCart={setCart} user={login} cart={cart}/>}/>
             <Route path='/cart' element={<Cart products={cart} setCart={setCart} user={login} setOrder={setOrders}/>}/>
             <Route path='/orders' element={<Order orders={orders}/>}/>
             <Route path='/category' element={<Categories/>}/>

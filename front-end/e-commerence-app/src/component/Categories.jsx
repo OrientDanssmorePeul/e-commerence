@@ -15,10 +15,9 @@ const Categories = () => {
 
     useEffect(()=>{
         const fetchProduct = async () => {
-            const response = await fetch(`http://localhost:5000/categories/getAll`)
+            const response = await fetch(`http://localhost:3000/categories/getAll`)
             const data = await response.json()
             setCategory(data)
-            console.log(data)  
         }
         fetchProduct()
     }, [])
@@ -36,7 +35,6 @@ const Categories = () => {
             setCategory([...category, updateData])
             createCategory.current.value = ""            
         }
-
     }
 
     const handleDelete = async (categ) => {

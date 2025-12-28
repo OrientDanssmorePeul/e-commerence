@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { NavLink } from "react-router"
 import { Typography, Box, Button, Grid, Card, Badge } from '@mui/material'
+import axios from "axios"
 
-function Home({setCart}) {
+function Home({setCart, user, cart}) {
 
   const [popUp, setPopUp] = useState(false)
   const [category, setCategory] = useState(["Consoles", "Games", "Accessories", "Subscriptions"])
@@ -28,24 +29,62 @@ function Home({setCart}) {
     setThatCategory(e.target.value)
   }
 
-  function add(order) {
-    const ca = order;
-    setCart((prevCart) => {
-      const exists = prevCart.find((item) => item._id === ca._id);
-      if (exists) {
-        return prevCart.map((item) =>
-          item._id === ca._id 
-            ? { ...item, quantity: item.quantity + 1 } 
-            : item
-        );
-      } else {
-        return [...prevCart, { ...ca, quantity: 1 }];
+  // async function add(order) {
+  //   const exists = cart.find((item) => item._id === order._id);
+  //   if(order._id){
+  //       const response = await axios.post('http://localhost:3000/cart/newCart', {
+  //           user: user._id,
+  //           products: 
+  //             exists 
+  //             ? 
+  //             order.map((p)=>({
+  //                 productId: p._id, 
+  //                 name: p.name,
+  //                 price: p.price,
+  //                 quantity: p.quantity + 1
+  //             }))
+  //             :
+  //             order.map((p)=>({
+  //                 productId: p._id, 
+  //                 name: p.name,
+  //                 price: p.price,
+  //                 quantity: 1
+  //             }))
+  //       })
+  //       const data = response.data; 
+  //       setCart(data)            
+  //   }
+  //   setPopUp(true)
+  //   setTimeout(function() {
+  //     setPopUp(false)
+  //   }, 4000);
+  // }
+  async function add(order) {
+      if (!order._id) return;
+
+      try {
+          // Send the product to the backend
+          const response = await axios.post('http://localhost:3000/cart/newCart', {
+              user: user._id,
+              products: [
+                  {
+                      productId: order._id,
+                      name: order.name,
+                      price: order.price,
+                      quantity: 1 // always 1, backend will handle increments
+                  }
+              ]
+          });
+
+          // Update frontend cart with backend response
+          setCart(response.data.products);
+
+          // Show popup
+          setPopUp(true);
+          setTimeout(() => setPopUp(false), 4000);
+      } catch (err) {
+          console.error(err);
       }
-    })
-    setPopUp(true)
-    setTimeout(function() {
-      setPopUp(false)
-    }, 4000);
   }
 
   return (
